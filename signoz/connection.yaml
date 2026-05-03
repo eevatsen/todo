@@ -1,0 +1,3 @@
+# SigNoz Connection Configuration
+# This is a minimal configuration for the query service
+primary_path: "clickhouse://clickhouse:9000"
