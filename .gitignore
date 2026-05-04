@@ -35,6 +35,8 @@ bld/
 !**/[Pp]ackages/build/
 
 # Others
+appsettings.json
+appsettings.*.json
 TestResults/
 [Ss]tyle[Cc]op.[Cc]ache
 ipch/
