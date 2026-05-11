@@ -1,5 +1,6 @@
 import { Container, Typography, Box } from "@mui/material"
 import InputArea from "./components/InputArea"
+import TaskList from "./components/TaskList"
 
 function App() {
   return (
@@ -10,6 +11,7 @@ function App() {
         </Typography>
       </Box>
       <InputArea />
+      <TaskList />
     </Container>
   )
 }

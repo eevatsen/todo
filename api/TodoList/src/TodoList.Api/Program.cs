@@ -27,6 +27,17 @@ builder.Services.AddOpenTelemetry()
         .AddOtlpExporter(options => options.Endpoint = new Uri("http://localhost:4317")));
 
 builder.Services.AddControllers();
+
+builder.Services.AddCors(options =>
+{
+    options.AddDefaultPolicy(policy =>
+    {
+        policy.WithOrigins("http://localhost:5173") // Vite default
+              .AllowAnyHeader()
+              .AllowAnyMethod();
+    });
+});
+
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
 
@@ -38,7 +49,9 @@ if (app.Environment.IsDevelopment())
     app.MapOpenApi();
 }
 
-app.UseHttpsRedirection();
+// app.UseHttpsRedirection(); // Commented for local HTTP development
+
+app.UseCors();
 
 app.UseAuthorization();
 
