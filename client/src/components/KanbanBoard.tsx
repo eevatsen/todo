@@ -9,7 +9,7 @@ const getPriorityColor = (priority: TodoPriority) => {
         case TodoPriority.Urgent: return "#FF0000";
         case TodoPriority.High: return "#FF69B4";
         case TodoPriority.Low: return "#4CAF50";
-        default: return "#000000";
+        default: return "#FFD700";
     }
 };
 

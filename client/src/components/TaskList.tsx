@@ -47,7 +47,7 @@ const getPriorityColor = (priority: TodoPriority) => {
         case TodoPriority.Urgent: return "#FF0000"; // Red
         case TodoPriority.High: return "#FF69B4"; // Pink
         case TodoPriority.Low: return "#4CAF50"; // Green
-        default: return "#000000"; // Black
+        default: return "#FFD700"; // Yellow
     }
 };
 
