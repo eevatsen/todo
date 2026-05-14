@@ -5,6 +5,7 @@ export interface TodoItem {
     title: string;
     description?: string;
     status: TodoStatus;
+    priority: TodoPriority;
     deadline?: string;
     createdAt: string;
 }
@@ -16,6 +17,15 @@ export const TodoStatus = {
 } as const;
 
 export type TodoStatus = typeof TodoStatus[keyof typeof TodoStatus];
+
+export const TodoPriority = {
+    Low: 0,
+    Medium: 1,
+    High: 2,
+    Urgent: 3
+} as const;
+
+export type TodoPriority = typeof TodoPriority[keyof typeof TodoPriority];
 
 export const todoApi = createApi({
     reducerPath: 'todoApi',

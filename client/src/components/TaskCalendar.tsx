@@ -40,7 +40,7 @@ const TaskCalendar = ({ todos }: TaskCalendarProps) => {
                                 {tasks.length > 0 ? (
                                     tasks.map(t => (
                                         <Typography key={t.id} variant="body2" sx={{ fontWeight: 700 }}>
-                                            тЧж {t.title}
+                                            • {t.title}
                                         </Typography>
                                     ))
                                 ) : (

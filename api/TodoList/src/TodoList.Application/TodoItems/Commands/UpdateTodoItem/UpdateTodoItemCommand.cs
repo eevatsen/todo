@@ -11,6 +11,7 @@ public record UpdateTodoItemCommand : IRequest
     public string Title { get; init; } = string.Empty;
     public string? Description { get; init; }
     public TodoStatus Status { get; init; }
+    public TodoPriority Priority { get; init; }
     public DateTime? Deadline { get; init; }
 }
 
@@ -36,6 +37,7 @@ public class UpdateTodoItemCommandHandler : IRequestHandler<UpdateTodoItemComman
         entity.Title = request.Title;
         entity.Description = request.Description;
         entity.Status = request.Status;
+        entity.Priority = request.Priority;
         entity.Deadline = request.Deadline;
         entity.UpdatedAt = DateTime.UtcNow;
 

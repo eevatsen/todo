@@ -1,11 +1,12 @@
 import { useState } from "react";
-import { TextField, Button, Paper, Box } from "@mui/material";
+import { TextField, Button, Paper, Box, FormControl, InputLabel, Select, MenuItem } from "@mui/material";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
-import { useCreateTodoMutation } from "../store/api/todoApi";
+import { useCreateTodoMutation, TodoPriority } from "../store/api/todoApi";
 import { Dayjs } from "dayjs";
 
 function InputArea() {
   const [title, setTitle] = useState("");
+  const [priority, setPriority] = useState<TodoPriority>(TodoPriority.Medium);
   const [deadline, setDeadline] = useState<Dayjs | null>(null);
   const [createTodo, { isLoading }] = useCreateTodoMutation();
 
@@ -15,10 +16,12 @@ function InputArea() {
     try {
       await createTodo({ 
         title, 
+        priority,
         deadline: deadline ? deadline.toISOString() : undefined 
       }).unwrap();
       setTitle(""); // Clear input on success
       setDeadline(null);
+      setPriority(TodoPriority.Medium);
     } catch (err) {
       console.error("Failed to add task:", err);
     }
@@ -32,7 +35,7 @@ function InputArea() {
 
   return (
     <Paper sx={{ p: 2, display: 'flex', flexDirection: 'column', gap: 2 }}>
-      <Box sx={{ display: 'flex', gap: 1 }}>
+      <Box sx={{ display: 'flex', gap: 1, flexWrap: { xs: 'wrap', sm: 'nowrap' } }}>
         <TextField
           fullWidth
           variant="outlined"
@@ -43,6 +46,21 @@ function InputArea() {
           onKeyPress={handleKeyPress}
           disabled={isLoading}
         />
+        <FormControl size="small" sx={{ minWidth: 120 }}>
+            <InputLabel id="priority-label">Priority</InputLabel>
+            <Select
+                labelId="priority-label"
+                value={priority}
+                label="Priority"
+                onChange={(e) => setPriority(e.target.value as TodoPriority)}
+                disabled={isLoading}
+            >
+                <MenuItem value={TodoPriority.Low}>Low</MenuItem>
+                <MenuItem value={TodoPriority.Medium}>Medium</MenuItem>
+                <MenuItem value={TodoPriority.High}>High</MenuItem>
+                <MenuItem value={TodoPriority.Urgent}>Urgent</MenuItem>
+            </Select>
+        </FormControl>
         <DatePicker
           label="Deadline"
           value={deadline}

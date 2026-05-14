@@ -9,10 +9,11 @@ import {
     FormControl, 
     InputLabel, 
     Select, 
-    MenuItem 
+    MenuItem,
+    Box
 } from "@mui/material";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
-import { useUpdateTodoMutation, TodoStatus } from "../store/api/todoApi";
+import { useUpdateTodoMutation, TodoStatus, TodoPriority } from "../store/api/todoApi";
 import type { TodoItem } from "../store/api/todoApi";
 import dayjs, { Dayjs } from "dayjs";
 
@@ -27,6 +28,7 @@ const EditTaskDialog = ({ todo, open, onClose }: EditTaskDialogProps) => {
     const [title, setTitle] = useState("");
     const [description, setDescription] = useState("");
     const [status, setStatus] = useState<TodoStatus>(TodoStatus.Todo);
+    const [priority, setPriority] = useState<TodoPriority>(TodoPriority.Medium);
     const [deadline, setDeadline] = useState<Dayjs | null>(null);
 
     useEffect(() => {
@@ -34,6 +36,7 @@ const EditTaskDialog = ({ todo, open, onClose }: EditTaskDialogProps) => {
             setTitle(todo.title);
             setDescription(todo.description || "");
             setStatus(todo.status);
+            setPriority(todo.priority);
             setDeadline(todo.deadline ? dayjs(todo.deadline) : null);
         }
     }, [todo]);
@@ -47,6 +50,7 @@ const EditTaskDialog = ({ todo, open, onClose }: EditTaskDialogProps) => {
                 title,
                 description,
                 status,
+                priority,
                 deadline: deadline ? deadline.toISOString() : undefined
             }).unwrap();
             onClose();
@@ -77,20 +81,37 @@ const EditTaskDialog = ({ todo, open, onClose }: EditTaskDialogProps) => {
                     onChange={(e) => setDescription(e.target.value)}
                     disabled={isLoading}
                 />
-                <FormControl fullWidth>
-                    <InputLabel id="status-label">Status</InputLabel>
-                    <Select
-                        labelId="status-label"
-                        value={status}
-                        label="Status"
-                        onChange={(e) => setStatus(e.target.value as TodoStatus)}
-                        disabled={isLoading}
-                    >
-                        <MenuItem value={TodoStatus.Todo}>Todo</MenuItem>
-                        <MenuItem value={TodoStatus.InProgress}>In Progress</MenuItem>
-                        <MenuItem value={TodoStatus.Done}>Done</MenuItem>
-                    </Select>
-                </FormControl>
+                <Box sx={{ display: 'flex', gap: 1 }}>
+                    <FormControl fullWidth>
+                        <InputLabel id="status-label">Status</InputLabel>
+                        <Select
+                            labelId="status-label"
+                            value={status}
+                            label="Status"
+                            onChange={(e) => setStatus(e.target.value as TodoStatus)}
+                            disabled={isLoading}
+                        >
+                            <MenuItem value={TodoStatus.Todo}>Todo</MenuItem>
+                            <MenuItem value={TodoStatus.InProgress}>In Progress</MenuItem>
+                            <MenuItem value={TodoStatus.Done}>Done</MenuItem>
+                        </Select>
+                    </FormControl>
+                    <FormControl fullWidth>
+                        <InputLabel id="edit-priority-label">Priority</InputLabel>
+                        <Select
+                            labelId="edit-priority-label"
+                            value={priority}
+                            label="Priority"
+                            onChange={(e) => setPriority(e.target.value as TodoPriority)}
+                            disabled={isLoading}
+                        >
+                            <MenuItem value={TodoPriority.Low}>Low</MenuItem>
+                            <MenuItem value={TodoPriority.Medium}>Medium</MenuItem>
+                            <MenuItem value={TodoPriority.High}>High</MenuItem>
+                            <MenuItem value={TodoPriority.Urgent}>Urgent</MenuItem>
+                        </Select>
+                    </FormControl>
+                </Box>
                 <DatePicker
                     label="Deadline"
                     value={deadline}
