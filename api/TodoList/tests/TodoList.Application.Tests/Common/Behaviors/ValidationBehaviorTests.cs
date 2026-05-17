@@ -26,7 +26,7 @@ public class ValidationBehaviorTests
         var behavior = new ValidationBehavior<TestRequest, string>(new[] { validator });
 
         // Act
-        var result = await behavior.Handle(request, Next, default);
+        var result = await behavior.Handle(request, () => Next(), default);
 
         // Assert
         result.Should().Be("Success");

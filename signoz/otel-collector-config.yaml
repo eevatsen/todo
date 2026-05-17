@@ -16,29 +16,23 @@ processors:
   batch:
     send_batch_size: 1000
     timeout: 10s
-  memory_limiter:
-    check_interval: 1s
-    limit_mib: 1000
 
 exporters:
-  clickhousetraces:
-    datasource: tcp://default:password@clickhouse:9000/signoz_index
-  signozclickhousemetrics:
-    dsn: tcp://default:password@clickhouse:9000/signoz_metrics
-  clickhouselogsexporter:
-    dsn: tcp://default:password@clickhouse:9000/signoz_logs
+  # This exporter prints EVERYTHING to the Docker logs
+  debug:
+    verbosity: detailed
 
 service:
   pipelines:
     traces:
       receivers: [otlp]
-      processors: [memory_limiter, batch]
-      exporters: [clickhousetraces]
+      processors: [batch]
+      exporters: [debug]
     metrics:
       receivers: [otlp]
-      processors: [memory_limiter, batch]
-      exporters: [signozclickhousemetrics]
+      processors: [batch]
+      exporters: [debug]
     logs:
       receivers: [otlp]
-      processors: [memory_limiter, batch]
-      exporters: [clickhouselogsexporter]
+      processors: [batch]
+      exporters: [debug]
