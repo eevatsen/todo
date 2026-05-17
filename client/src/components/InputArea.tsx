@@ -8,22 +8,32 @@ function InputArea() {
   const [title, setTitle] = useState("");
   const [priority, setPriority] = useState<TodoPriority>(TodoPriority.Medium);
   const [deadline, setDeadline] = useState<Dayjs | null>(null);
+  const [error, setError] = useState<string | null>(null);
   const [createTodo, { isLoading }] = useCreateTodoMutation();
 
   const handleAdd = async () => {
-    if (!title.trim()) return;
+    if (!title.trim()) {
+      setError("Title is required.");
+      return;
+    }
 
     try {
+      setError(null);
       await createTodo({ 
         title, 
         priority,
         deadline: deadline ? deadline.toISOString() : undefined 
       }).unwrap();
-      setTitle(""); // Clear input on success
+      setTitle("");
       setDeadline(null);
       setPriority(TodoPriority.Medium);
-    } catch (err) {
+    } catch (err: any) {
       console.error("Failed to add task:", err);
+      if (err.data?.errors?.Title) {
+        setError(err.data.errors.Title[0]);
+      } else {
+        setError("An unexpected error occurred.");
+      }
     }
   };
 
@@ -40,11 +50,17 @@ function InputArea() {
           fullWidth
           variant="outlined"
           placeholder="Add a new task..."
+          label="Title"
           size="small"
           value={title}
-          onChange={(e) => setTitle(e.target.value)}
+          onChange={(e) => {
+            setTitle(e.target.value);
+            if (e.target.value.trim()) setError(null);
+          }}
           onKeyPress={handleKeyPress}
           disabled={isLoading}
+          error={!!error}
+          helperText={error}
         />
         <FormControl size="small" sx={{ minWidth: 120 }}>
             <InputLabel id="priority-label">Priority</InputLabel>

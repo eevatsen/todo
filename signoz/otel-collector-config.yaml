@@ -5,6 +5,11 @@ receivers:
         endpoint: 0.0.0.0:4317
       http:
         endpoint: 0.0.0.0:4318
+        cors:
+          allowed_origins:
+            - http://localhost:5173
+          allowed_headers:
+            - "*"
 
 processors:
   batch:
@@ -12,20 +17,21 @@ processors:
     timeout: 10s
 
 exporters:
-  clickhouse:
-    datasource: tcp://clickhouse:9000/?database=signoz_index
+  # This exporter prints EVERYTHING to the terminal
+  debug:
+    verbosity: detailed
 
 service:
   pipelines:
     traces:
       receivers: [otlp]
       processors: [batch]
-      exporters: [clickhouse]
+      exporters: [debug]
     metrics:
       receivers: [otlp]
       processors: [batch]
-      exporters: [clickhouse]
+      exporters: [debug]
     logs:
       receivers: [otlp]
       processors: [batch]
-      exporters: [clickhouse]
+      exporters: [debug]

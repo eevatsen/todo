@@ -118,9 +118,15 @@ const KanbanBoard = ({ todos }: KanbanBoardProps) => {
                                                                     ? `8px solid ${getPriorityColor(todo.priority)}` 
                                                                     : "2px solid #000",
                                                                 backgroundColor: "#fff",
+                                                                cursor: snapshot.isDragging ? "grabbing" : "grab",
+                                                                userSelect: "none",
+                                                                willChange: "transform, box-shadow",
                                                                 boxShadow: snapshot.isDragging ? "12px 12px 0px #000" : "4px 4px 0px #000",
                                                                 transform: snapshot.isDragging ? "rotate(2deg)" : "none",
                                                                 transition: "box-shadow 0.2s, transform 0.2s",
+                                                                "&:hover": {
+                                                                    backgroundColor: "#fafafa",
+                                                                },
                                                                 ...provided.draggableProps.style
                                                             }}
                                                         >

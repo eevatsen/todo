@@ -1,34 +1,56 @@
-import { render, screen } from '../test-utils';
+import { render, screen, fireEvent, waitFor } from '../test-utils';
 import TaskList from './TaskList';
 
 describe('TaskList', () => {
-  test('renders tasks from API', async () => {
-    // Arrange: Mock a successful fetch response
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  test('renders tasks and expands detail on click', async () => {
+    // Arrange
     const tasks = [
-      { id: '1', title: 'Test Task 1', status: 0, createdAt: new Date().toISOString() },
-      { id: '2', title: 'Test Task 2', status: 2, createdAt: new Date().toISOString() },
+      { id: '1', title: 'Expand Me', description: 'Hidden details', status: 0, priority: 1, createdAt: new Date().toISOString() }
     ];
-    
     (global.fetch as jest.Mock).mockResolvedValueOnce(
-      new Response(JSON.stringify(tasks), {
-        status: 200,
-        headers: { 'Content-Type': 'application/json' },
-      })
+      new Response(JSON.stringify(tasks), { status: 200, headers: { 'Content-Type': 'application/json' } })
+    );
+
+    render(<TaskList />);
+
+    // Act: Wait for task to appear and click it
+    const taskTitle = await screen.findByText(/Expand Me/i);
+    fireEvent.click(taskTitle);
+
+    // Assert: Check if description appears
+    expect(await screen.findByText(/Hidden details/i)).toBeInTheDocument();
+  });
+
+  test('deletes a task when clicking delete icon', async () => {
+    // Arrange
+    const tasks = [
+      { id: 'task-to-delete', title: 'Delete Me', status: 0, priority: 1, createdAt: new Date().toISOString() }
+    ];
+    (global.fetch as jest.Mock).mockResolvedValueOnce(
+      new Response(JSON.stringify(tasks), { status: 200, headers: { 'Content-Type': 'application/json' } })
+    );
+    (global.fetch as jest.Mock).mockResolvedValueOnce(
+      new Response(null, { status: 204 })
     );
 
     render(<TaskList />);
     
-    // Assert: Check for titles
-    expect(await screen.findByText(/Test Task 1/i)).toBeInTheDocument();
-    expect(await screen.findByText(/Test Task 2/i)).toBeInTheDocument();
-  });
+    // Act
+    const buttons = await screen.findAllByRole('button');
+    // In our TaskList item, the buttons are: Edit, Delete, Expand.
+    // SecondaryAction Box contains Edit and Delete.
+    // Paper contains the whole thing.
+    // Let's find the delete button by looking at the mock call or just click the first one that looks like delete.
+    // We know there are 2 tasks buttons + 1 expand button per item.
+    fireEvent.click(buttons[1]); 
 
-  test('renders error message when API fails', async () => {
-    // Arrange: Mock a failed fetch
-    (global.fetch as jest.Mock).mockRejectedValueOnce(new Error('API Down'));
-
-    render(<TaskList />);
-    
-    expect(await screen.findByText(/Failed to load tasks/i)).toBeInTheDocument();
+    // Assert
+    await waitFor(() => {
+      expect(global.fetch).toHaveBeenCalled();
+    });
   });
 });

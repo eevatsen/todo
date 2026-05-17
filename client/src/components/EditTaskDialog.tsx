@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import { 
     Dialog, 
-    DialogTitle, 
     DialogContent, 
     DialogActions, 
     TextField, 
@@ -30,6 +29,7 @@ const EditTaskDialog = ({ todo, open, onClose }: EditTaskDialogProps) => {
     const [status, setStatus] = useState<TodoStatus>(TodoStatus.Todo);
     const [priority, setPriority] = useState<TodoPriority>(TodoPriority.Medium);
     const [deadline, setDeadline] = useState<Dayjs | null>(null);
+    const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
         if (todo) {
@@ -38,13 +38,18 @@ const EditTaskDialog = ({ todo, open, onClose }: EditTaskDialogProps) => {
             setStatus(todo.status);
             setPriority(todo.priority);
             setDeadline(todo.deadline ? dayjs(todo.deadline) : null);
+            setError(null);
         }
     }, [todo]);
 
     const handleSave = async () => {
-        if (!todo || !title.trim()) return;
+        if (!todo || !title.trim()) {
+            setError("Title is required.");
+            return;
+        }
 
         try {
+            setError(null);
             await updateTodo({
                 ...todo,
                 title,
@@ -54,23 +59,33 @@ const EditTaskDialog = ({ todo, open, onClose }: EditTaskDialogProps) => {
                 deadline: deadline ? deadline.toISOString() : undefined
             }).unwrap();
             onClose();
-        } catch (err) {
+        } catch (err: any) {
             console.error("Failed to update task:", err);
+            if (err.data?.errors?.Title) {
+                setError(err.data.errors.Title[0]);
+            } else {
+                setError("An unexpected error occurred.");
+            }
         }
     };
 
     return (
         <Dialog open={open} onClose={onClose} fullWidth maxWidth="xs">
-            <DialogTitle sx={{ fontWeight: 900, textTransform: 'uppercase' }}>
+            {/* <DialogTitle sx={{ fontWeight: 900, textTransform: 'uppercase' }}>
                 Edit Task
-            </DialogTitle>
+            </DialogTitle> */}
             <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 1 }}>
                 <TextField
                     label="Title"
                     fullWidth
                     value={title}
-                    onChange={(e) => setTitle(e.target.value)}
+                    onChange={(e) => {
+                        setTitle(e.target.value);
+                        if (e.target.value.trim()) setError(null);
+                    }}
                     disabled={isLoading}
+                    error={!!error}
+                    helperText={error}
                 />
                 <TextField
                     label="Description"
