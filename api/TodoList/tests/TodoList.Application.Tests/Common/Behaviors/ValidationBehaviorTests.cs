@@ -15,7 +15,8 @@ public class ValidationBehaviorTests
         // Arrange
         var request = new TestRequest();
         bool nextCalled = false;
-        Task<string> Next() 
+        
+        Task<string> Next()
         {
             nextCalled = true;
             return Task.FromResult("Success");
@@ -25,7 +26,7 @@ public class ValidationBehaviorTests
         var behavior = new ValidationBehavior<TestRequest, string>(new[] { validator });
 
         // Act
-        var result = await behavior.Handle(request, new RequestHandlerDelegate<string>(Next), default);
+        var result = await behavior.Handle(request, Next, default);
 
         // Assert
         result.Should().Be("Success");
@@ -37,13 +38,12 @@ public class ValidationBehaviorTests
     {
         // Arrange
         var request = new TestRequest();
-        Task<string> Next() => Task.FromResult("Success");
         
         var validator = new TestRequestValidator(false);
         var behavior = new ValidationBehavior<TestRequest, string>(new[] { validator });
 
         // Act & Assert
-        await FluentActions.Invoking(() => behavior.Handle(request, new RequestHandlerDelegate<string>(Next), default))
+        await FluentActions.Invoking(() => behavior.Handle(request, () => Task.FromResult("Success"), default))
             .Should().ThrowAsync<ValidationException>();
     }
 

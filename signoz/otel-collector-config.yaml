@@ -8,6 +8,7 @@ receivers:
         cors:
           allowed_origins:
             - http://localhost:5173
+            - http://localhost:5174
           allowed_headers:
             - "*"
 
@@ -15,23 +16,29 @@ processors:
   batch:
     send_batch_size: 1000
     timeout: 10s
+  memory_limiter:
+    check_interval: 1s
+    limit_mib: 1000
 
 exporters:
-  # This exporter prints EVERYTHING to the terminal
-  debug:
-    verbosity: detailed
+  clickhousetraces:
+    datasource: tcp://default:password@clickhouse:9000/signoz_index
+  signozclickhousemetrics:
+    dsn: tcp://default:password@clickhouse:9000/signoz_metrics
+  clickhouselogsexporter:
+    dsn: tcp://default:password@clickhouse:9000/signoz_logs
 
 service:
   pipelines:
     traces:
       receivers: [otlp]
-      processors: [batch]
-      exporters: [debug]
+      processors: [memory_limiter, batch]
+      exporters: [clickhousetraces]
     metrics:
       receivers: [otlp]
-      processors: [batch]
-      exporters: [debug]
+      processors: [memory_limiter, batch]
+      exporters: [signozclickhousemetrics]
     logs:
       receivers: [otlp]
-      processors: [batch]
-      exporters: [debug]
+      processors: [memory_limiter, batch]
+      exporters: [clickhouselogsexporter]

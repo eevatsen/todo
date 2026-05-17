@@ -1,5 +1,5 @@
 services:
-  # MSSQL Database (Required for the App)
+  # MSSQL Database
   mssql:
     image: mcr.microsoft.com/mssql/server:2022-latest
     container_name: todo-list-db
@@ -11,20 +11,76 @@ services:
     volumes:
       - mssql-data:/var/opt/mssql
 
-  # OTel Collector (The heart of OpenTelemetry)
-  # We will use this to show raw logs/traces in the terminal
-  otel-collector:
+  # SigNoz Infrastructure
+  clickhouse:
+    image: clickhouse/clickhouse-server:25.5.6-alpine
+    container_name: signoz-clickhouse
+    environment:
+      - CLICKHOUSE_USER=default
+      - CLICKHOUSE_PASSWORD=password
+      - CLICKHOUSE_DB=signoz_index
+    volumes:
+      - clickhouse-data:/var/lib/clickhouse
+    healthcheck:
+      test: ["CMD", "clickhouse-client", "--user", "default", "--password", "password", "--query", "SELECT 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Helper to create ALL required databases
+  clickhouse-setup:
+    image: clickhouse/clickhouse-server:25.5.6-alpine
+    container_name: clickhouse-setup
+    command: >
+      sh -c "until clickhouse-client --host clickhouse --user default --password password --query 'SELECT 1'; do sleep 2; done;
+             clickhouse-client --host clickhouse --user default --password password --query 'CREATE DATABASE IF NOT EXISTS signoz_index';
+             clickhouse-client --host clickhouse --user default --password password --query 'CREATE DATABASE IF NOT EXISTS signoz_logs';
+             clickhouse-client --host clickhouse --user default --password password --query 'CREATE DATABASE IF NOT EXISTS signoz_metrics';
+             clickhouse-client --host clickhouse --user default --password password --query 'CREATE DATABASE IF NOT EXISTS signoz_traces';"
+    depends_on:
+      clickhouse:
+        condition: service_healthy
+
+  signoz-query-service:
+    image: signoz/query-service:latest
+    container_name: signoz-query-service
+    environment:
+      - SIGNOZ_TELEMETRYSTORE_CLICKHOUSE_DSN=tcp://default:password@clickhouse:9000/signoz_index
+      - SIGNOZ_SQLSTORE_SQLITE_PATH=/var/lib/signoz/signoz.db
+      - SIGNOZ_JWT_SECRET=demo-secret-key-12345
+      - STORAGE=clickhouse
+    volumes:
+      - signoz-db:/var/lib/signoz
+    depends_on:
+      clickhouse-setup:
+        condition: service_completed_successfully
+
+  signoz-otel-collector:
     image: signoz/signoz-otel-collector:latest
-    container_name: otel-collector
+    container_name: signoz-otel-collector
     command: ["--config=/etc/otel-collector-config.yaml"]
     volumes:
       - ./signoz/otel-collector-config.yaml:/etc/otel-collector-config.yaml
     environment:
-      - OTEL_RESOURCE_ATTRIBUTES=host.name=demo-host,os.description=linux
+      - OTEL_RESOURCE_ATTRIBUTES=host.name=signoz-host,os.description=linux
     ports:
-      - "4317:4317" # OTLP gRPC
-      - "4318:4318" # OTLP HTTP
-    restart: always
+      - "4317:4317" # OTLP gRPC receiver
+      - "4318:4318" # OTLP HTTP receiver
+    depends_on:
+      clickhouse-setup:
+        condition: service_completed_successfully
+
+  signoz-frontend:
+    image: signoz/frontend:latest
+    container_name: signoz-frontend
+    volumes:
+      - ./signoz/nginx.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - signoz-query-service
+    ports:
+      - "3301:80"
 
 volumes:
   mssql-data:
+  clickhouse-data:
+  signoz-db:
