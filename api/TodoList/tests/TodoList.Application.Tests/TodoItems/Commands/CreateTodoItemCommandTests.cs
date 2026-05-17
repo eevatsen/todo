@@ -1,6 +1,7 @@
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 using TodoList.Application.TodoItems.Commands.CreateTodoItem;
+using TodoList.Domain.Enums;
 
 namespace TodoList.Application.Tests.TodoItems.Commands;
 
@@ -15,7 +16,8 @@ public class CreateTodoItemCommandTests : TestBase
         {
             Title = "New Task",
             Description = "Description",
-            Deadline = DateTime.UtcNow.AddDays(1)
+            Deadline = DateTime.UtcNow.AddDays(1),
+            Priority = TodoPriority.High
         };
 
         // Act
@@ -27,5 +29,6 @@ public class CreateTodoItemCommandTests : TestBase
         entity!.Title.Should().Be(command.Title);
         entity.Description.Should().Be(command.Description);
         entity.Deadline.Should().Be(command.Deadline);
+        entity.Priority.Should().Be(command.Priority);
     }
 }

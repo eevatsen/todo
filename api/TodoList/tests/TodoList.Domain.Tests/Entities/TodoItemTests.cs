@@ -14,6 +14,7 @@ public class TodoItemTests
 
         // Assert
         item.Status.Should().Be(TodoStatus.Todo);
+        item.Priority.Should().Be(TodoPriority.Medium);
         item.CreatedAt.Should().BeCloseTo(DateTime.UtcNow, TimeSpan.FromSeconds(1));
     }
 }

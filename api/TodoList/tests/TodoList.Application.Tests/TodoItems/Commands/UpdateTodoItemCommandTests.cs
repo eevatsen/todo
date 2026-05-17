@@ -20,7 +20,8 @@ public class UpdateTodoItemCommandTests : TestBase
         {
             Id = id,
             Title = "New Title",
-            Status = TodoStatus.Done
+            Status = TodoStatus.Done,
+            Priority = TodoPriority.Urgent
         };
 
         // Act
@@ -30,6 +31,7 @@ public class UpdateTodoItemCommandTests : TestBase
         var entity = await Context.TodoItems.FindAsync(id);
         entity!.Title.Should().Be("New Title");
         entity.Status.Should().Be(TodoStatus.Done);
+        entity.Priority.Should().Be(TodoPriority.Urgent);
     }
 
     [Fact]

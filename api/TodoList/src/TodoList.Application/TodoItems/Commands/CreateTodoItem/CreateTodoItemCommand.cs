@@ -9,6 +9,7 @@ public record CreateTodoItemCommand : IRequest<Guid>
 {
     public string Title { get; init; } = string.Empty;
     public string? Description { get; init; }
+    public TodoPriority Priority { get; init; } = TodoPriority.Medium;
     public DateTime? Deadline { get; init; }
 }
 
@@ -29,6 +30,7 @@ public class CreateTodoItemCommandHandler : IRequestHandler<CreateTodoItemComman
             Title = request.Title,
             Description = request.Description,
             Deadline = request.Deadline,
+            Priority = request.Priority,
             Status = TodoStatus.Todo,
             CreatedAt = DateTime.UtcNow
         };

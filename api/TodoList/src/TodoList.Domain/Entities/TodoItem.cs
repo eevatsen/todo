@@ -8,6 +8,7 @@ public class TodoItem
     public string Title { get; set; } = string.Empty;
     public string? Description { get; set; }
     public TodoStatus Status { get; set; } = TodoStatus.Todo;
+    public TodoPriority Priority { get; set; } = TodoPriority.Medium;
     public DateTime? Deadline { get; set; }
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public DateTime? UpdatedAt { get; set; }

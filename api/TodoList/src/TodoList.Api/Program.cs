@@ -1,3 +1,4 @@
+using TodoList.Api.Infrastructure;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
 using OpenTelemetry.Metrics;
@@ -9,6 +10,9 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration);
+
+builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
+builder.Services.AddProblemDetails();
 
 // Configure OpenTelemetry
 builder.Services.AddOpenTelemetry()
@@ -27,6 +31,17 @@ builder.Services.AddOpenTelemetry()
         .AddOtlpExporter(options => options.Endpoint = new Uri("http://localhost:4317")));
 
 builder.Services.AddControllers();
+
+builder.Services.AddCors(options =>
+{
+    options.AddDefaultPolicy(policy =>
+    {
+        policy.WithOrigins("http://localhost:5173") // Vite default
+              .AllowAnyHeader()
+              .AllowAnyMethod();
+    });
+});
+
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
 
@@ -38,7 +53,12 @@ if (app.Environment.IsDevelopment())
     app.MapOpenApi();
 }
 
-app.UseHttpsRedirection();
+app.UseExceptionHandler();
+
+// app.UseHttpsRedirection();
+ // Commented for local HTTP development
+
+app.UseCors();
 
 app.UseAuthorization();
 

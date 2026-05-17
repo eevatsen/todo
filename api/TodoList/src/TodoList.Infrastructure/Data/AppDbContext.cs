@@ -22,6 +22,7 @@ public class AppDbContext : DbContext, IAppDbContext
             entity.Property(e => e.Title).IsRequired().HasMaxLength(200);
             entity.Property(e => e.Description).HasMaxLength(1000);
             entity.Property(e => e.Status).HasConversion<int>();
+            entity.Property(e => e.Priority).HasConversion<int>();
         });
     }
 }
